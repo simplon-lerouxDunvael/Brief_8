@@ -26,7 +26,7 @@ echo "AKS cluster credentials retrieved."
 
 # Create Redis database secret
 echo "Creating Redis database secret..."
-kubectl create secret generic reddb-pass --from-literal=username=$redusr --from-literal=password=$redpass
+kubectl create secret generic redis-secret-duna --from-literal=username=$redusr --from-literal=password=$redpass
 echo "Redis database secret created."
 
 # Add Jetstack Helm repository
@@ -54,11 +54,14 @@ echo "Installing cert-manager-webhook-gandi Helm chart..."
 helm install cert-manager-webhook-gandi --repo https://bwolf.github.io/cert-manager-webhook-gandi --version v0.2.0 --namespace cert-manager --set features.apiPriorityAndFairness=true --set logLevel=6 --generate-name
 echo "cert-manager-webhook-gandi Helm chart installed."
 
-# Create role and rolebinding for accessing secrets
-echo "Creating role and rolebinding for accessing secrets..."
-kubectl create role access-secrets --verb=get,list,watch,update,create --resource=secrets
-kubectl create rolebinding --role=access-secrets default-to-secrets --serviceaccount=cert-manager:cert-manager-webhook-gandi-1665665029
-echo "Role and rolebinding created."
+# # Recover the webhook number from the cert-manager namespace
+# kubectl get secrets -n cert-manager
+
+# # Create role and rolebinding for accessing secrets
+# echo "Creating role and rolebinding for accessing secrets..."
+# kubectl create role access-secrets --verb=get,list,watch,update,create --resource=secrets
+# kubectl create rolebinding --role=access-secrets default-to-secrets --serviceaccount=cert-manager:cert-manager-webhook-gandi-1665665029
+# echo "Role and rolebinding created."
 
 # Create Prod & Fab namespaces
 echo "Creating Prod & Fab namaspaces for QAL & Public deploy"
