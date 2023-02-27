@@ -60,16 +60,16 @@ spec: # Par default le type est ClusterIP, il n'y a aucun raison de le spécifie
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: votingapp
+  name: alfred-votingapp
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: votingapp
+      app: az-votingapp
   template:
     metadata:
       labels:
-        app: votingapp
+        app: az-votingapp
     spec:
       nodeSelector:
         "kubernetes.io/os": linux
@@ -95,6 +95,19 @@ spec:
               key: password
 
 ---
+# App Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: vote-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+  selector:
+    app: az-votingapp
+
+---
 # PV Claim creation
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -107,3 +120,36 @@ spec:
   resources:
     requests:
       storage: 3Gi
+
+---
+# Autoscale Voteapp
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: scale-vote
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: alfred-votingapp
+  minReplicas: 1
+  maxReplicas: 8
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+status:
+  observedGeneration: 1
+  lastScaleTime: 
+  currentReplicas: 1
+  desiredReplicas: 1
+  currentMetrics:
+  - type: Resource
+    resource:
+      name: cpu
+      current:
+        averageUtilization: 0
+        averageValue: 0
