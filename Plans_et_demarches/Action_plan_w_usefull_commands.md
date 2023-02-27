@@ -144,15 +144,22 @@ az group create --location francecentral --name b8duna
 
 <div id='Storacc'/>  
 
-### **Creation of a storage account (standard GRS)**
+### **Creation of a forked branch in GitHub**
 
-I learned that Storage Account, PV creations and bindings aren't necessary, with the right settings, Kubernetes is totally capable of handling it by itself and more reliably than human hand.
+As required in the brief, I forked Alfred's [azure-vote](https://github.com/simplon-alfred/azure-voting-app-redis) repos and renamed it as [Forked_azVotingApp_b8duna](https://github.com/simplon-lerouxDunvael/Forked_azVotingApp_b8duna) to avoid confusion.
+
+![forked_branch](https://user-images.githubusercontent.com/108001918/221544580-67de67d0-c302-4a69-a55f-f1fedfb8d8a0.png)
+
 
 [&#8679;](#top)
 
 <div id='AKS'/>  
 
 ### **Creation of the AKS Cluster (with SSH keys generated)**
+
+As Kubernetes is totally capable of handling it by itself and more reliably than human hand (with the right settings), I did not create a storage Account, PV creations and bindings.
+
+
 
 ```bash
 az aks create -g b8duna -n AKSClusterDuna --enable-managed-identity --node-count 2 --enable-addons monitoring --enable-msi-auth-for-monitoring  --generate-ssh-keys
