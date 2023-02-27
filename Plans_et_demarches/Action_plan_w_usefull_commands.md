@@ -195,6 +195,12 @@ First I went to Azure DevOps, created a project and clicked on Pipelines : <http
 
 Then, I had to configure my organization and project's [visibility](https://learn.microsoft.com/en-us/azure/devops/organizations/projects/make-project-public?view=azure-devops). I went to the settings and turned on the visibility to public.
 
+Before deploying Ingress, I needed to comment several parts of the code :
+
+![ingressto2commented](https://user-images.githubusercontent.com/108001918/221582840-7ad195f0-9eec-4719-9ddb-58cdcf30e150.png)
+
+Once done, I decommented the parts and added the dns name I created.
+
 Finally, I added a service connection (Project settings > service connections > add > kubernetes).
 
 ![service_connection2](https://user-images.githubusercontent.com/108001918/210520992-0536c68a-17b6-4b8a-91e4-2bccb2159e75.png)
@@ -205,7 +211,7 @@ Finally, I added a service connection (Project settings > service connections > 
 
 ### **Creation of a test pipeline**
 
-I created a new pipeline and provided its location (Github.yaml) and the repository (Brief_7). Then I chose a starter template and used the assistant to add a Kubectl task.  
+I created a new pipeline and provided its location (Github.yaml) and the repository (Brief_8). Then I chose a starter template and used the assistant to add a Kubectl task.  
 Finally I saved it and ran it.
 
 ![pipeline_job_run](https://user-images.githubusercontent.com/108001918/210521068-ec3cc98c-e2ab-46a7-9d46-3cadd39a3c37.png)
@@ -305,7 +311,7 @@ Then I check my pods and services :
 kubectl get pods
 kubectl get services
 
-As everything was running perfectly, I used the IP address to connect to the Voting App. It worked fine. Then I deleted the redis pod ```kubectl delete pod redis-service``` and typed ```kubcetl get pods```. The redis service was automatically renewed.  
+As everything was running perfectly, I used the IP address to connect to the Voting App. It worked fine. Then I deleted the redis pod ```kubectl delete pod redis-service``` and typed ```kubectl get pods```. The redis service was automatically renewed.  
 Finally, I refreshed the voting app page and found out that the votes count had not been reset. All the containers were working and the persistent volume as well.
 
 [&#8679;](#top)
