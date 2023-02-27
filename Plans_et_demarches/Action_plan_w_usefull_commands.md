@@ -159,6 +159,8 @@ As required in the brief, I forked Alfred's [azure-vote](https://github.com/simp
 
 As Kubernetes is totally capable of handling it by itself and more reliably than human hand (with the right settings), I did not create a storage Account, PV creations and bindings.
 
+I created my AKS cluster :
+
 ```bash
 az aks create -g b8duna -n AKSClusterDuna --enable-managed-identity --node-count 2 --enable-addons monitoring --enable-msi-auth-for-monitoring  --generate-ssh-keys
 ```
