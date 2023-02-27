@@ -6,7 +6,7 @@ aksname="AKSClusterDuna"
 rgloc="francecentral"
 redusr="devuser"
 redpass="password_redis_154"
-apitoken="'2fbAa8tMWHBUnNwFi5EhuRgp'"
+apitoken="2fbAa8tMWHBUnNwFi5EhuRgp"
 certvers="v1.10.1"
 
 # Create resource group
@@ -36,7 +36,7 @@ echo "Jetstack Helm repository added."
 
 # Install cert-manager with custom DNS settings
 echo "Installing cert-manager..."
-helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --set installCRDs=true --version $certvers --set 'extraArgs={--dns01-recursive-nameservers=8.8.8.8:53\,1.1.1.1:53}'
+helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --set installCRDs=true --version v1.10.1 --set 'extraArgs={--dns01-recursive-nameservers=8.8.8.8:53\,1.1.1.1:53}'
 echo "Cert-manager installed."
 
 # Install NGINX Ingress Controller
