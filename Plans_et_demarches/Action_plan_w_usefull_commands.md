@@ -171,6 +171,8 @@ az aks create -g b8duna -n AKSClusterDuna --enable-managed-identity --node-count
 
 ### **Connecting the AKS Cluster and Azure**
 
+Then I connected my AKS cluster to Azure.
+
 ```bash
 az aks get-credentials --resource-group b8duna --name AKSClusterDuna
 ```
@@ -180,6 +182,8 @@ az aks get-credentials --resource-group b8duna --name AKSClusterDuna
 <div id='RedSecret'/>  
 
 ### **Creation of the redis secret**
+
+I created a redis secret.
 
 ```bash
 kubectl create secret generic redis-secret-duna --from-literal=username=devuser --from-literal=password=password_redis_154
@@ -195,13 +199,41 @@ First I went to Azure DevOps, created a project and clicked on Pipelines : <http
 
 Then, I had to configure my organization and project's [visibility](https://learn.microsoft.com/en-us/azure/devops/organizations/projects/make-project-public?view=azure-devops). I went to the settings and turned on the visibility to public.
 
-Before deploying Ingress, I needed to comment several parts of the code :
+[&#8679;](#top)
 
-![ingressto2commented](https://user-images.githubusercontent.com/108001918/221582840-7ad195f0-9eec-4719-9ddb-58cdcf30e150.png)
+<div id='Ingress'/>  
 
-Once done, I decommented the parts and added the dns name I created.
+### **Deployment of Ingress**
 
-Finally, I added a service connection (Project settings > service connections > add > kubernetes).
+Once I deployed redis and the azure voting app and checked that my pods were running properly I decided to install Ingress to be able to access to the voting app from an url http I chose (and that i would later link to my dns record).
+
+First I installed everything that was necessary for ingress with the following command :
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.4.0/deploy/static/provider/cloud/deploy.yaml
+```
+
+Then I created three different versions of Ingress.
+
+* ingress_step1.yaml file  : the TLS parts, the host and the TLS annotations are commented. I applied it with ```kubectl apply -f ingress_step1.yaml``` and checked it with ```kubectl get ingress```.
+
+After this step, ingress had an IP address. Then I created a "A" DNS record with the ingress IP address. I checked ingress and it now displayed with : smoothie.simplon-duna.space.
+
+* ingress_step2.yaml file  : i added the dns to the host part. I applied it with ```kubectl apply -f ingress_step1.yaml``` and checked it with ```kubectl get ingress```.
+* ingress_step3.yaml file  : the TLS parts and the TLS annotations are decommented and the host has its dns name added. I applied it with ```kubectl apply -f ingress_step1.yaml``` and checked it with ```kubectl get ingress```.
+
+Finally I connected to the Voting app using smoothie.simplon-duna.space and it worked.
+
+[&#8679;](#top)
+
+
+
+
+
+
+
+
+Finally, I added a service connection and checked "Use cluster admin credentials" (Project settings > service connections > add > kubernetes).
 
 ![service_connection2](https://user-images.githubusercontent.com/108001918/210520992-0536c68a-17b6-4b8a-91e4-2bccb2159e75.png)
 
@@ -232,35 +264,16 @@ It allowed me to know which path I needed to put to refer the .yaml file to use 
 
 <div id='Error'/>  
 
-### **Error messages**
+### ****
 
-I received an error at the end of the job. It seems that Azure does not have the rights to create a persistent volume and the PV claim.
-
-![Error_pipeline](https://user-images.githubusercontent.com/108001918/210544375-1f1e042e-a659-4c1f-941b-49a9ce07d471.png)
-
-On the Azure CLI I searched the service account default used by Azure to run the pipeline with the following command :
-
-```bash
-kubectl get serviceaccounts/default
-```
-
-Alfred tried to bind an admin role he created to the Azure service account Default to see if we could get admin rights on the Kubernetes cluster. Sadly it did not work.
-
-![Error_pipeline2](https://user-images.githubusercontent.com/108001918/210545569-b0ce0e74-e461-4407-b3fc-69c6ecfbaad5.png)
 
 [&#8679;](#top)
 
 <div id='Solution'/>  
 
-### **Trying to find a solution**
+### ****
 
-I recreated my Kubernetes Service Connection and checked "Use cluster admin credentials". As Alfred changed the credentials previously, when I reran my pipeline I had no rights issue.
 
-Then I focused on the PV and PVC issue.
-
-I created a container in my storage account in order to be able to use my fileshare for the PV and PVC.
-
-My PV displayed but was not mounted thus my redis container could not be created.
 
 To understand the errors I had I checked the events :
 
@@ -289,23 +302,9 @@ It then displayed in CrashLoopBackOff because redis was not created but now I ju
 
 <div id='Updating'/>  
 
-### **Creation of a storage share for the storage account**
+### ****
 
-I checked if I had a storage share for my storage account with the command :
 
-```bash
-az storage share list --account-name b7dstoracc --account-key Ha/rrRrMwoLotpOK1wT5a1dphjPgfa0z9NZjf7W/1veO6nhHgNtzvjFyIK+y1oBy+I92/y73CPVp+AStu1jQQQ==
-```
-
-I did not, so I created a storage share directly on my storage account.
-
-```bash
-az storage share create --account-name b7dstoracc --name b7d-redis-fileshare --account-key Ha/rrRrMwoLotpOK1wT5a1dphjPgfa0z9NZjf7W/1veO6nhHgNtzvjFyIK+y1oBy+I92/y73CPVp+AStu1jQQQ==
-```
-
-Then I verified that it had been successfully created.
-
-![storage-share_check](https://user-images.githubusercontent.com/108001918/210567347-d9933eb0-4cf3-4753-a70e-1ed4170ecbf9.png)
 
 Then I check my pods and services :
 kubectl get pods
@@ -313,36 +312,6 @@ kubectl get services
 
 As everything was running perfectly, I used the IP address to connect to the Voting App. It worked fine. Then I deleted the redis pod ```kubectl delete pod redis-service``` and typed ```kubectl get pods```. The redis service was automatically renewed.  
 Finally, I refreshed the voting app page and found out that the votes count had not been reset. All the containers were working and the persistent volume as well.
-
-[&#8679;](#top)
-
-<div id='PV'/>  
-
-### **Remove the PV**
-
-As Kubernetes automatically creates a PV when a PVC is created, I removed the PV from my script and decided to start again without creating the storage account, the storage share to verify if Kubernetes would do everything automatically. Then I ran the pipeline.
-
-When I searched for the PVC and the pods with kubectl commands on Azure CLI, their status showed that it did not work properly.
-
-![not_working_AGAIN](https://user-images.githubusercontent.com/108001918/210743380-128d1882-c8ad-45f6-a2c4-4f159585c20e.png)
-
-After some researches *(and screechs)*, I modified the ```volumes``` part on the redis container with the persistentVolumeClaim and removed the references to the PV. I updated it as well in the ```volumeMounts``` part. Finally, I relaunched the pipeline and the job ran successfully.
-
-[&#8679;](#top)
-
-<div id='Again'/>  
-
-### **Delete everything and start again**
-
-I decided to delete my resource groups to try once again from scratch and check if it also worked when Alfred and Bryan weren't watching *(just in case the code gets pressured to work when they are present, we never know)*.
-
-![pipeline_working](https://user-images.githubusercontent.com/108001918/210748762-a67a9983-bf18-480d-af1b-de5107fcc2b8.png)
-
-![voting-app_working](https://user-images.githubusercontent.com/108001918/210749443-339f0a3d-befc-4b02-bce9-21c532321b29.png)
-
-![working](https://user-images.githubusercontent.com/108001918/210749947-e702d1aa-9dfe-4591-a5f0-fdbaef5b6e51.png)
-
-![persistent_working](https://user-images.githubusercontent.com/108001918/210750285-4f2fea62-585e-41d3-89f7-d9529023eec3.png)
 
 [&#8679;](#top)
 
@@ -445,7 +414,7 @@ kubectl get secrets -n cert-manager
 And pasted it on the following command :
 
 ```bash
-kubectl create rolebinding --role=access-secret default-to-secrets --serviceaccount=cert-manager:cert-manager-webhook-gandi-1672931110
+kubectl create rolebinding --role=access-secret default-to-secrets --serviceaccount=cert-manager:cert-manager-webhook-gandi-3260173208
 ```
 
 [&#8679;](#top)
