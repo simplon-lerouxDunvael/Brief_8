@@ -81,7 +81,7 @@ Frequent meeting with other coworkers to study solutions to encountered problems
 
 #### **Kubernetes, AKS and Azure Pipelines doc reading**
 
-Lecture des documentations afin de déterminer les fonctionnements, prérequis et outils/logiciels nécessaires pour remplir les différentes tâches du Brief 7.
+Researches and reading of documentations to determine the needed prerequisites, functionnalities and softwares to complete the different tasks of Brief 8.
 
 [&#8679;](#top)  
 
@@ -130,8 +130,14 @@ a1f74e2d-ec58-4f9a-a112-088e3469febb
 
 ### **Creation of a resource group**
 
+I tried to create a resource group with a lock with a Bicep script I created. When I tried to deploy it, I had an error message telling me that I did not have the rights to deploy this script on Simplon's subscription.
+
+![cant_deploy_bicep2sub](https://user-images.githubusercontent.com/108001918/221535360-df4fdccf-f457-435c-b581-9bfca9be9582.png)
+
+So, I had to do it manually.
+
 ```bash
-az group create --location francecentral --name b7duna
+az group create --location francecentral --name b8duna
 ```
 
 [&#8679;](#top)
@@ -149,7 +155,7 @@ I learned that Storage Account, PV creations and bindings aren't necessary, with
 ### **Creation of the AKS Cluster (with SSH keys generated)**
 
 ```bash
-az aks create -g b7duna -n AKSClusterDuna --enable-managed-identity --node-count 2 --enable-addons monitoring --enable-msi-auth-for-monitoring  --generate-ssh-keys
+az aks create -g b8duna -n AKSClusterDuna --enable-managed-identity --node-count 2 --enable-addons monitoring --enable-msi-auth-for-monitoring  --generate-ssh-keys
 ```
 
 [&#8679;](#top)
@@ -159,7 +165,7 @@ az aks create -g b7duna -n AKSClusterDuna --enable-managed-identity --node-count
 ### **Connecting the AKS Cluster and Azure**
 
 ```bash
-az aks get-credentials --resource-group b7duna --name AKSClusterDuna
+az aks get-credentials --resource-group b8duna --name AKSClusterDuna
 ```
 
 [&#8679;](#top)
@@ -178,7 +184,7 @@ kubectl create secret generic redis-secret-duna --from-literal=username=devuser 
 
 ### **Connecting to Azure DevOps Pipelines**
 
-First I went to Azure DevOps, created a project and clicked on Pipelines : <https://dev.azure.com/dlerouxext/b7duna/_build>  
+First I went to Azure DevOps, created a project and clicked on Pipelines : <https://dev.azure.com/dlerouxext/b8duna/_build>  
 Then I added a service connection (Project settings > service connections > add > kubernetes).
 
 ![service_connection2](https://user-images.githubusercontent.com/108001918/210520992-0536c68a-17b6-4b8a-91e4-2bccb2159e75.png)
