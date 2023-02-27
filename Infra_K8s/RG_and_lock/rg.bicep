@@ -38,7 +38,7 @@ resource RG 'Microsoft.Resources/resourceGroups@2021-04-01' = {
 }
 
 // This part deploys resources as well as a lock into the resource group
-module lockRg '' = {
+module lockRg 'lock_rg.bicep' = {
   name: 'LockHubRGDeploy'
   scope: RG  // Passing newly created resource group as module's deployment scope
   params: {
@@ -48,4 +48,4 @@ module lockRg '' = {
   }
 }
 
-//az deployment sub create --location XXXXX --template-file RG_1.bicep --parameters RG_1.parameters.jsonc
+//az deployment sub create --location francecentral --template-file rg.bicep --parameters rg.parameters.jsonc
