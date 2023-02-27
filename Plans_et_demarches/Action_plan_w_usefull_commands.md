@@ -159,8 +159,6 @@ As required in the brief, I forked Alfred's [azure-vote](https://github.com/simp
 
 As Kubernetes is totally capable of handling it by itself and more reliably than human hand (with the right settings), I did not create a storage Account, PV creations and bindings.
 
-
-
 ```bash
 az aks create -g b8duna -n AKSClusterDuna --enable-managed-identity --node-count 2 --enable-addons monitoring --enable-msi-auth-for-monitoring  --generate-ssh-keys
 ```
@@ -191,8 +189,11 @@ kubectl create secret generic redis-secret-duna --from-literal=username=devuser 
 
 ### **Connecting to Azure DevOps Pipelines**
 
-First I went to Azure DevOps, created a project and clicked on Pipelines : <https://dev.azure.com/dlerouxext/b8duna/_build>  
-Then I added a service connection (Project settings > service connections > add > kubernetes).
+First I went to Azure DevOps, created a project and clicked on Pipelines : <https://dev.azure.com/dlerouxext/b8duna> 
+
+Then, I had to configure my organization and project's [visibility](https://learn.microsoft.com/en-us/azure/devops/organizations/projects/make-project-public?view=azure-devops). I went to the settings and turned on the visibility to public.
+
+Finally, I added a service connection (Project settings > service connections > add > kubernetes).
 
 ![service_connection2](https://user-images.githubusercontent.com/108001918/210520992-0536c68a-17b6-4b8a-91e4-2bccb2159e75.png)
 
