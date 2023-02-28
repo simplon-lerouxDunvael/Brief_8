@@ -75,6 +75,21 @@ else
     :
 fi
 
+# Add Jetstack Helm repository
+echo "Adding Jetstack Helm repository..."
+helm repo add jetstack https://charts.jetstack.io
+echo "Jetstack Helm repository added."
+
+# Install cert-manager with custom DNS settings
+echo "Installing cert-manager..."
+helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --set installCRDs=true --version v1.10.1 --set 'extraArgs={--dns01-recursive-nameservers=8.8.8.8:53\,1.1.1.1:53}'
+echo "Cert-manager installed."
+
+# Install cert-manager-webhook-gandi Helm chart
+echo "Installing cert-manager-webhook-gandi Helm chart..."
+helm install cert-manager-webhook-gandi --repo https://bwolf.github.io/cert-manager-webhook-gandi --version v0.2.0 --namespace cert-manager --set features.apiPriorityAndFairness=true --set logLevel=6 --generate-name
+echo "cert-manager-webhook-gandi Helm chart installed."
+
 # Apply applicative layers
 echo "Applying applicative configuration files..."
 kubectl apply -f azure-vote.yaml -n qua
@@ -92,21 +107,6 @@ echo "Applying Let's Encrypt Issuer configuration files..."
 kubectl apply -f issuer-qua.yaml -n qua
 kubectl apply -f issuer-prod.yaml -n prod
 echo "Let's Encrypt Issuer configuration files applied."
-
-# Add Jetstack Helm repository
-echo "Adding Jetstack Helm repository..."
-helm repo add jetstack https://charts.jetstack.io
-echo "Jetstack Helm repository added."
-
-# Install cert-manager with custom DNS settings
-echo "Installing cert-manager..."
-helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --set installCRDs=true --version v1.10.1 --set 'extraArgs={--dns01-recursive-nameservers=8.8.8.8:53\,1.1.1.1:53}'
-echo "Cert-manager installed."
-
-# Install cert-manager-webhook-gandi Helm chart
-echo "Installing cert-manager-webhook-gandi Helm chart..."
-helm install cert-manager-webhook-gandi --repo https://bwolf.github.io/cert-manager-webhook-gandi --version v0.2.0 --namespace cert-manager --set features.apiPriorityAndFairness=true --set logLevel=6 --generate-name
-echo "cert-manager-webhook-gandi Helm chart installed."
 
 # Create Gandi API token secret
 echo "Creating Gandi API token secret..."
