@@ -11,7 +11,7 @@ metadata:
 spec:
   ingressClassName: nginx-prod
   rules:
-  - host: smoothie.simplon-duna.space
+  - host: smoothie-qua.simplon-duna.space
     http:
       paths:
       - path: /
@@ -23,5 +23,5 @@ spec:
               number: 80
   # tls: # placing a host in the TLS config will determine what ends up in the cert's subjectAlt
   # - hosts:
-  #   - smoothie.simplon-duna.space
+  #   - smoothie-qua.simplon-duna.space
   #   secretName: secret-tls # cert-manager will store the created certificate in this secret.
