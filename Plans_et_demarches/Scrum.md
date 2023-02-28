@@ -9,11 +9,12 @@ Objectifs :
 Mardi 28/02/23  
 Résultats de la veille :
 
-* 
+* Problème avec le déploiement d'ingress donc impossible d'avancer le brief
 
 Objectifs :
 
-* 
+* Régler le problème d'ingress
+* Continuer le brief
 
 Mercredi 01/03/23  
 Résultats de la veille :
