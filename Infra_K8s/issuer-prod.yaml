@@ -21,4 +21,4 @@ spec:
             apiKeySecretRef:
               key: api-token
               name: gandi-credentials
-              namespace: cert-manager
+              namespace: prod
