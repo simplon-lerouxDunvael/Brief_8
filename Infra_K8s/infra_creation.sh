@@ -74,7 +74,8 @@ echo "Gandi API token secret created."
 
 # Create role and rolebinding for accessing secrets
 echo "Creating role and rolebinding for accessing secrets..."
-kubectl create role access-secrets --verb=get,list,watch,update,create --resource=secrets
+kubectl create role access-secrets --verb=get,list,watch,update,create --resource=secrets - n qua
+kubectl create role access-secrets --verb=get,list,watch,update,create --resource=secrets - n prod
 kubectl create rolebinding --role=access-secrets default-to-secrets --serviceaccount=cert-manager:cert-manager-webhook-gandi-1677588045
 echo "Role and rolebinding created."
 
