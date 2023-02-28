@@ -44,8 +44,8 @@ echo "Redis database secret created."
 echo "Installing NGINX Ingress Controller..."
 helm install my-release nginx-stable/nginx-ingress
 helm repo update
-helm install nginx-qua nginx-stable/nginx-ingress --create-namespace --namespace qua --debug --set-controller.ingressClass="nginx-qua"
-helm install nginx-prod nginx-stable/nginx-ingress --create-namespace --namespace prod --debug --set-controller.ingressClass="nginx-prod"
+helm install nginx-qua nginx-stable/nginx-ingress --create-n --namespace qua --debug --set-controller.ingressClass="nginx-qua"
+helm install nginx-prod nginx-stable/nginx-ingress --create-n --namespace prod --debug --set-controller.ingressClass="nginx-prod"
 echo "NGINX Ingress Controller installed."
 
 # Add Jetstack Helm repository
