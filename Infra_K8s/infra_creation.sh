@@ -135,3 +135,16 @@ echo "Applying Ingress configuration files..."
 kubectl apply -f ingress_qua2.yaml -n qua
 kubectl apply -f ingress_prod2.yaml -n prod
 echo "Ingress configuration files applied."
+
+# Waiting for certificates
+echo "Let's take 5 to let certificates settle in..."
+sleep 120s
+echo "Alright, let's steam ahead !"
+
+# Check certificates
+echo "Let's check the certificates status"
+kubectl get certificate --all-namespaces
+
+# Check Ingress
+echo "let's check ingress"
+kubectl get ingress --all-namespaces
