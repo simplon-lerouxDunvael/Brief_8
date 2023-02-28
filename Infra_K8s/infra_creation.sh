@@ -50,7 +50,7 @@ echo "NGINX Ingress Controller installed."
 
 # Break time for Nginx to initialize
 echo "Let's take 5 to let Nginx settle in..."
-sleep 5s
+sleep 30s
 echo "Alright, let's steam ahead !"
 
 # Extract External IP address
