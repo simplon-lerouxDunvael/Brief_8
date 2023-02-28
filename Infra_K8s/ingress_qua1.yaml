@@ -9,7 +9,7 @@ metadata:
     # cert-manager.io/issuer-kind: Issuer
     # cert-manager.io/issuer-group: cert-manager.io
 spec:
-  ingressClassName: nginx-prod
+  ingressClassName: nginx-qua
   rules:
   - host: smoothie-qua.simplon-duna.space
     http:
