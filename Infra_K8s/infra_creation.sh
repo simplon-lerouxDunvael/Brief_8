@@ -40,6 +40,11 @@ echo "Creating Redis database secret for namespace prod..."
 kubectl create secret generic redis-secret-duna --from-literal=username=$redusrprod --from-literal=password=$redpassprod -n prod
 echo "Redis database secret created."
 
+# Add Jetstack Helm repository
+echo "Adding Jetstack Helm repository..."
+helm repo add jetstack https://charts.jetstack.io
+echo "Jetstack Helm repository added."
+
 # Install NGINX Ingress Controller
 echo "Installing NGINX Ingress Controller..."
 helm repo add nginx-stable https://helm.nginx.com/stable
@@ -48,33 +53,28 @@ helm install nginx-qua nginx-stable/nginx-ingress --create-namespace -n qua --de
 helm install nginx-prod nginx-stable/nginx-ingress --create-namespace -n prod --debug --set controller.ingressClass="nginx-prod"
 echo "NGINX Ingress Controller installed."
 
-# Add Jetstack Helm repository
-echo "Adding Jetstack Helm repository..."
-helm repo add jetstack https://charts.jetstack.io
-echo "Jetstack Helm repository added."
+# Install cert-manager with custom DNS settings
+echo "Installing cert-manager..."
+helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --set installCRDs=true --version v1.10.1 --set 'extraArgs={--dns01-recursive-nameservers=8.8.8.8:53\,1.1.1.1:53}'
+echo "Cert-manager installed."
 
-# # Install cert-manager with custom DNS settings
-# echo "Installing cert-manager..."
-# helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --set installCRDs=true --version v1.10.1 --set 'extraArgs={--dns01-recursive-nameservers=8.8.8.8:53\,1.1.1.1:53}'
-# echo "Cert-manager installed."
+# Install cert-manager-webhook-gandi Helm chart
+echo "Installing cert-manager-webhook-gandi Helm chart..."
+helm install cert-manager-webhook-gandi --repo https://bwolf.github.io/cert-manager-webhook-gandi --version v0.2.0 --namespace cert-manager --set features.apiPriorityAndFairness=true --set logLevel=6 --generate-name
+echo "cert-manager-webhook-gandi Helm chart installed."
 
-# # Create Gandi API token secret
-# echo "Creating Gandi API token secret..."
-# kubectl create secret generic gandi-credentials --from-literal=api-token=$apitoken
-# # kubectl create secret generic gandi-credentials --from-literal=api-token=$apitoken -n prod
-# echo "Gandi API token secret created."
-
-# # Install cert-manager-webhook-gandi Helm chart
-# echo "Installing cert-manager-webhook-gandi Helm chart..."
-# helm install cert-manager-webhook-gandi --repo https://bwolf.github.io/cert-manager-webhook-gandi --version v0.2.0 --namespace cert-manager --set features.apiPriorityAndFairness=true --set logLevel=6 --generate-name
-# echo "cert-manager-webhook-gandi Helm chart installed."
+# Create Gandi API token secret
+echo "Creating Gandi API token secret..."
+kubectl create secret generic gandi-credentials --from-literal=api-token=$apitoken
+# kubectl create secret generic gandi-credentials --from-literal=api-token=$apitoken -n prod
+echo "Gandi API token secret created."
 
 # # Recover the webhook number from the cert-manager namespace
 # kubectl get secrets -n cert-manager
 
-# # Create role and rolebinding for accessing secrets
-# echo "Creating role and rolebinding for accessing secrets..."
-# kubectl create role access-secrets --verb=get,list,watch,update,create --resource=secrets
-# kubectl create rolebinding --role=access-secrets default-to-secrets --serviceaccount=cert-manager:cert-manager-webhook-gandi-1665665029
-# echo "Role and rolebinding created."
+# Create role and rolebinding for accessing secrets
+echo "Creating role and rolebinding for accessing secrets..."
+kubectl create role access-secrets --verb=get,list,watch,update,create --resource=secrets
+kubectl create rolebinding --role=access-secrets default-to-secrets --serviceaccount=cert-manager:cert-manager-webhook-gandi-1677588045
+echo "Role and rolebinding created."
 
