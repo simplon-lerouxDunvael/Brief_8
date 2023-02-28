@@ -50,9 +50,9 @@ echo "NGINX Ingress Controller installed."
 
 # Extract External IP address
 ProdIngIP=$(kubectl get svc nginx-prod-nginx-ingress -n prod -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
-QuaIngIP=$(kubectl get svc nginx-qa-nginx-ingress -n qa -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
+QuaIngIP=$(kubectl get svc nginx-qua-nginx-ingress -n qua -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
 echo "Prod Ingress: $ProdIngIP"
-echo "QUA Ingress: $QaIngIP"
+echo "QUA Ingress: $QuaIngIP"
 
 # Insert a pause in the script so that users can report IP to DNS
 read -n1 -r -p "Press Y to continue, or N to stop: " key
@@ -106,16 +106,16 @@ echo "cert-manager-webhook-gandi Helm chart installed."
 # Create Gandi API token secret
 echo "Creating Gandi API token secret..."
 kubectl create secret generic gandi-credentials --from-literal=api-token=$apitoken
-kubectl create secret generic gandi-credentials --from-literal=api-token=$apitoken -n qa
+kubectl create secret generic gandi-credentials --from-literal=api-token=$apitoken -n qua
 kubectl create secret generic gandi-credentials --from-literal=api-token=$apitoken -n prod
 echo "Gandi API token secret created."
 
 # Create role and rolebinding for accessing secrets
 echo "Creating role and rolebinding for accessing secrets..."
 hookID=$(kubectl get pods -n cert-manager | grep "cert-manager-webhook-gandi-" | cut -d"-" -f5)
-kubectl create role access-secrets --verb=get,list,watch,update,create --resource=secrets -n qa
+kubectl create role access-secrets --verb=get,list,watch,update,create --resource=secrets -n qua
 kubectl create role access-secrets --verb=get,list,watch,update,create --resource=secrets -n prod
-kubectl create rolebinding --role=access-secrets default-to-secrets --serviceaccount=cert-manager:cert-manager-webhook-gandi-$hookID -n qa
+kubectl create rolebinding --role=access-secrets default-to-secrets --serviceaccount=cert-manager:cert-manager-webhook-gandi-$hookID -n qua
 kubectl create rolebinding --role=access-secrets default-to-secrets --serviceaccount=cert-manager:cert-manager-webhook-gandi-$hookID -n prod
 echo "Role and rolebinding created."
 
