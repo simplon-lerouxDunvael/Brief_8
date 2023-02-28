@@ -48,6 +48,11 @@ helm install nginx-qua nginx-stable/nginx-ingress --create-namespace -n qua --de
 helm install nginx-prod nginx-stable/nginx-ingress --create-namespace -n prod --debug --set controller.ingressClass="nginx-prod"
 echo "NGINX Ingress Controller installed."
 
+# Break time for Nginx to initialize
+echo "Let's take 5 to let Nginx settle in..."
+sleep 5s
+echo "Alright, let's steam ahead !"
+
 # Extract External IP address
 ProdIngIP=$(kubectl get svc nginx-prod-nginx-ingress -n prod -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
 QuaIngIP=$(kubectl get svc nginx-qua-nginx-ingress -n qua -o=jsonpath='{.status.loadBalancer.ingress[0].ip}')
