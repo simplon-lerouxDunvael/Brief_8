@@ -134,11 +134,7 @@ I tried to create a resource group with a lock with a Bicep script I created. Wh
 
 ![cant_deploy_bicep2sub](https://user-images.githubusercontent.com/108001918/221535360-df4fdccf-f457-435c-b581-9bfca9be9582.png)
 
-So, I had to do it manually.
-
-```bash
-az group create --location francecentral --name b8duna
-```
+So, I decided to do it via a script .sh.
 
 [&#8679;](#top)
 
@@ -181,13 +177,34 @@ az aks get-credentials --resource-group b8duna --name AKSClusterDuna
 
 <div id='RedSecret'/>  
 
-### **Creation of the redis secret**
+### **Issues**
 
-I created a redis secret.
+I deployed the azure voting app correctly but had issues once again with ingress and the TLS.
+As Quentin, Luna and I, all had the same problems, we realized several tests while streaming our screens.
 
-```bash
-kubectl create secret generic redis-secret-duna --from-literal=username=devuser --from-literal=password=password_redis_154
-```
+We tried and discussed our results and failures and finally came to terms.
+
+We found that we needed to :
+
+* create the two namespaces after connecting the AKS cluster to Azure
+* create a redis secret for each namespace
+* create a helm repository and add nginx to it
+* install nginx in each namespace (qua and prod)
+* leave some time to nginx to initialize and gets its IP address
+* extract the external ip address of the nginx (still in load balancer)
+* create a dns record A with nginx external ip address (one for each environment)
+* create and add a Hetstack Helm repository to then install cert-manager in the cert-manager namespace
+* install cert-manager webhook gandi in the cert-manager namespace
+* deploy the voting app in each namespace
+* deploy ingress version 1 in each namespace
+* deploy let's encrypt issuer configuration files in each namespace
+* create a gandi-credentials secret for each namespace (with the dns API token)
+* deploy the certificate TLS for each namespace
+* finally deploy ingress version 2 in each namespace
+
+After deploying every resource in this order, we could all connect to the voting app from the https urls we chose (for both namespaces).
+
+After all these steps, we decided (with Luna) to create a script that would deploy everything directly without having to redo the steps manually every time our resource groups get destroyed.
 
 [&#8679;](#top)
 
