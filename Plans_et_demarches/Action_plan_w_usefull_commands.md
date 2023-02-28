@@ -217,6 +217,8 @@ Then I created three different versions of Ingress.
 
 * ingress_step1.yaml file  : the TLS parts, the host and the TLS annotations are commented. I applied it with ```kubectl apply -f ingress_step1.yaml``` and checked it with ```kubectl get ingress```.
 
+![first_ingress_working](https://user-images.githubusercontent.com/108001918/221797099-15cb98e4-40ef-4fa2-b95b-b41ffc3f1d12.png)
+
 After this step, ingress had an IP address. Then I created a "A" DNS record with the ingress IP address. I checked ingress and it now displayed with : smoothie.simplon-duna.space.
 
 * ingress_step2.yaml file  : i added the dns to the host part. I applied it with ```kubectl apply -f ingress_step1.yaml``` and checked it with ```kubectl get ingress```.
