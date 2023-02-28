@@ -65,8 +65,8 @@ echo "cert-manager-webhook-gandi Helm chart installed."
 
 # Create Gandi API token secret
 echo "Creating Gandi API token secret..."
-kubectl create secret generic gandi-credentials --from-literal=api-token=$apitoken
-# kubectl create secret generic gandi-credentials --from-literal=api-token=$apitoken -n prod
+kubectl create secret generic gandi-credentials --from-literal=api-token=2fbAa8tMWHBUnNwFi5EhuRgp -n qua
+kubectl create secret generic gandi-credentials --from-literal=api-token=2fbAa8tMWHBUnNwFi5EhuRgp -n prod
 echo "Gandi API token secret created."
 
 # # Recover the webhook number from the cert-manager namespace
