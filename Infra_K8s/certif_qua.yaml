@@ -9,4 +9,4 @@ spec:
   issuerRef:
     name: letsencrypt
     kind: Issuer
-  secretName: secret-tls
+  secretName: secret-tls-qua
