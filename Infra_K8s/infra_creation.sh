@@ -137,14 +137,21 @@ kubectl apply -f ingress_prod2.yaml -n prod
 echo "Ingress configuration files applied."
 
 # Waiting for certificates
-echo "Let's take 5 to let certificates settle in..."
+echo "Let's take 2' to let certificates to be presented..."
 sleep 120s
 echo "Alright, let's steam ahead !"
 
-# Check certificates
-echo "Let's check the certificates status"
+# Creating Kubeconfig for Azure Devops
+echo "Creating the Kubeconfig for Azure DevOps..."
+az aks get-credentials --resource-group $rgname --name $aksname -f kubeconfig.yaml
+echo "Kubeconfig file generated."
+
+# Check certificate
+echo "Let's check our certificates"
 kubectl get certificate --all-namespaces
 
-# Check Ingress
-echo "let's check ingress"
-kubectl get ingress --all-namespaces
+# Check ingresses
+echo "Let's check our ingresses"
+kubectl get ing --all-namespaces
+echo ""
+echo "Be sure to get the data from kubeconfig.yaml and remove it if it is created in your git."
