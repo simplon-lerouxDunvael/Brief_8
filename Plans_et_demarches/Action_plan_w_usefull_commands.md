@@ -216,6 +216,23 @@ First I went to Azure DevOps, created a project and clicked on Pipelines : <http
 
 Then, I had to configure my organization and project's [visibility](https://learn.microsoft.com/en-us/azure/devops/organizations/projects/make-project-public?view=azure-devops). I went to the settings and turned on the visibility to public.
 
+Since the last update of Kubernetes, the connection to Azure can't be made with the service connections.  
+Therefore, I had to create a kubeconfig file that recovers several connections informations.
+
+```Bash
+az aks get-credentials --resource-group $rgname --name $aksname -f kubeconfig.yaml
+```
+
+then I had to download it and place it directly in my Git repository (downloading it from azure terminal does not push it into Git):
+
+```Bash
+download kubeconfig.yaml
+```
+
+Once downloaded, I just have to put the code into the pipeline :
+
+![kubeconfig_pipeline](https://user-images.githubusercontent.com/108001918/222142716-c7971b42-d8ea-4116-b7b2-134ea79157da.png)
+
 [&#8679;](#top)
 
 <div id='Ingress'/>  
