@@ -19,11 +19,13 @@ Objectifs :
 Mercredi 01/03/23  
 Résultats de la veille :
 
-* 
+* Problème d'ingress réglé
+* problème de certificats let's encrypt
 
 Objectifs :
 
-* 
+* Régler le problème de certificats let's encrypt à régler
+* Continuer le brief avec le kubectl
 
 Jeudi 02/03/23  
 Résultats de la veille :
