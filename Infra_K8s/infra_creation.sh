@@ -155,3 +155,4 @@ echo "Let's check our ingresses"
 kubectl get ing --all-namespaces
 echo ""
 echo "Be sure to get the data from kubeconfig.yaml and remove it if it is created in your git."
+
