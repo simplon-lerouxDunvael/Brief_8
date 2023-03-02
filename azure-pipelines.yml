@@ -1,62 +1,136 @@
-schedules:
-- cron: "0 * * * *" # cron syntax defining the schedule - every hour at 0'
-  displayName: Hourly main schedule # friendly name given to a specific schedule
-  branches:
-    include: # which branches the schedule applies to
-    - main 
-#    exclude: # which branches to exclude from the schedule
-#    - [string]
-  always: false # whether to always run the pipeline or only if there have been source code changes since the last successful scheduled run. The default is false.
-
 trigger:
-- main
+  - main
+
+resources:
+- repo: self
 
 pool:
   vmImage: ubuntu-latest
 
-steps:
+variables:
+  imageName: 'votingApp'
+  imageRepository: 'dunvael/custom-voting-app'
+  dockerfilePath: './Dockerfile'
+  kubernetesServiceEndpoint: 'KubernetesDunaConnection'
+  canaryTag: 'canary'
 
-- task: Kubernetes@1
-  inputs:
-    connectionType: 'Kubernetes Service Connection'
-    kubernetesServiceEndpoint: 'Kubernetes Service Connection'
-    command: 'login'
+# Build the docker image
+stages:
+- stage: Build
+  jobs:
+  - job: BuildAndPush
+    displayName: 'Build and Push the Docker image to DockerHub'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'DockerHubConnection'
+        repository: $(imageRepository)
+        command: 'buildAndPush'
+        Dockerfile: $(dockerfilePath)
+        tags: 'latest'
 
+# Deploy to QUA
+- stage: DeployQUA
+  dependsOn: Build
+  jobs:
+  - job: DeployToQUA
+    displayName: 'Deploy to QUA'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Kubernetes@1
+      displayName: Deploy to QUA
+      inputs:
+        connectionType: 'Kubernetes Service Connection'
+        kubernetesServiceEndpoint: '$(kubernetesServiceEndpoint)'
+        namespace: 'qua'
+        command: 'apply'
+        arguments: '-f ./k8s/deployment.yaml'
+        secretType: 'dockerRegistry'
+        containerRegistryType: 'Container Registry'
+        dockerRegistryEndpoint: 'DockerHubConnection'
 
-- task: CmdLine@2
-  inputs:
-    script: |
-      set -x
-      pwd
-      ls -la
-      # Retrieve the version of the image into file for secret
-      VERVAR=$(curl 'https://hub.docker.com/v2/repositories/simplonasa/azure_voting_app/tags' | jq '."results"[0]["name"]'|sed -e 's/^"//' -e 's/"$//' <<<"$VERVAR")
-      echo "$VERVAR"|sed 's/^.//;s/.$//' >./version.vote
-      cat ./version.vote
-      # Retrieve the value of the secret
-      VERCUR=$(kubectl get secret version-secret -o jsonpath='{.data}'|awk -F ':' '{print $2}' | sed 's/\"//g; s/}//g')
-      VERCUR=$(echo "$VAR1" | base64 -d)
-      echo "$VERCUR"
-      if [ $? -ne 0 ]; then
-        # secret does not exist
-        kubectl create secret generic version-secret --from-literal=version=$VERVAR
-      elif [ "$VERVAR" != "$VERCUR" ]; then
-        # Update the secret with the new version number
-        kubectl patch secret version-secret -p "{\"data\":{\"version\":\"$VERVAR\"}}"
-      else
-        echo "The version in the secret is the same as the version found"
-      fi
+# Test QA service
+- stage: TestQUA
+  dependsOn: DeployQUA
+  jobs:
+  - job: TestQUAService
+    displayName: 'Test QUA Service'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - script: |
+        curl https://smoothie-qua.simplon-duna.space/
+      displayName: Test QUA Service with curl
 
-- task: Kubernetes@1
-  inputs:
-    connectionType: 'Kubernetes Service Connection'
-    kubernetesServiceEndpoint: 'Kubernetes Service Connection'
-    command: 'apply'
-    useConfigurationFile: true
-    configuration: '/home/vsts/work/1/s/vote-renew.yaml'
-    secretType: 'dockerRegistry'
-    containerRegistryType: 'Azure Container Registry'
-  displayName: 'K8s Infra'
-  condition: and(succeeded(), ne(variables['VERVAR'], variables['VERCUR']))
+# Deploy Prod
+- stage: DeployProd
+  dependsOn: TestQUA
+  jobs:
+  - job: CanaryDeploy
+    displayName: 'Canary Deploy to Prod'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Kubernetes@1
+      displayName: Canary Deploy to Prod
+      inputs:
+        connectionType: 'Kubernetes Service Connection'
+        kubernetesServiceEndpoint: '$(kubernetesServiceEndpoint)'
+        namespace: 'prod'
+        command: 'apply'
+        arguments: '-f ./k8s/deployment-canary.yaml'
 
+    - task: Kubernetes@1
+      inputs:
+        connectionType: 'Kubernetes Service Connection'
+        kubernetesServiceEndpoint: $(kubernetesServiceEndpoint)
+        namespace: 'prod'
+        command: 'login'
 
+    - task: Bash@3
+      inputs:
+        filePath: './testcanary.sh'
+
+    - task: Kubernetes@1
+      displayName: Promote Canary Deployment to Prod
+      inputs:
+        connectionType: 'Kubernetes Service Connection'
+        kubernetesServiceEndpoint: '$(kubernetesServiceEndpoint)'
+        namespace: 'prod'
+        command: 'apply'
+        arguments: '-f ./k8s/deployment.yaml'
+
+# testing Prod Service post canary
+- stage: TestProd
+  dependsOn: DeployProd
+  jobs:
+  - job: TestProdService
+    displayName: 'Test Prod Service'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - script: |
+        curl https://smoothie-prod.simplon-duna.space/
+      displayName: Test Prod Service with curl
+
+# Delete Canary
+- stage: DeleteCanary
+  dependsOn: TestProd
+  jobs:
+  - job: DeleteCanaryDeploy
+    displayName: 'Deletion of Canary Deployment'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Kubernetes@1
+      inputs:
+        connectionType: 'Kubernetes Service Connection'
+        kubernetesServiceEndpoint: '$(kubernetesServiceEndpoint)'
+        namespace: 'prod'
+        command: 'delete'
+        arguments: 'deployment alfred-voteapp-canary -n prod'
+        secretType: 'dockerRegistry'
+        containerRegistryType: 'Azure Container Registry'
