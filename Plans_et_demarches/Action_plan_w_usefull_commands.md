@@ -83,48 +83,7 @@ Frequent meeting with other coworkers to study solutions to encountered problems
 
 Researches and reading of documentations to determine the needed prerequisites, functionnalities and softwares to complete the different tasks of Brief 8.
 
-[&#8679;](#top)  
-
-<div id='Topology'/>  
-
-#### **Architecture Topology**
-
-Infrastructure Plannifiée
-
-![application_function](https://user-images.githubusercontent.com/108001918/215785565-1c0a7fac-5c4d-46fb-8f0f-070392580336.png)
-
-![pipeline_process](https://user-images.githubusercontent.com/108001918/215771546-dd5bb6bd-c13e-41b7-992f-ea0a3c0b75d8.png)
-
-[&#8679;](#top)  
-
-<div id='Ressources'/>  
-
-#### **Resource List**
-
------------
-| Ressources | Cluster AKS | Redis |  Voting App |
-| :--------: | :--------: | :--------: | :--------: |
-| Azure service | ✓ | ✓ | ✓ |
-| Azure DevOps | ✓ | ✓ | ✓ |
-| resource group | ✓ |✓ | ✓ |
-| SSH (port) | N/A | 6379 | 80 |
-| CPU | N/A | 100m-250m | 100m-250m |
-| Memory | N/A | 128mi-256mi | 128mi-256mi |
-| Image | N/A | redis:latest  | simplonasa/azure_voting_app:v1.0.11 |
-| Load Balancer | N/A | ✓ puis ✗ | ✓ |
-| ClusterIP | N/A | ✗ puis ✓ | ✗ |
-| Kubernetes secret | ✓ | ✓ | ✓ |
-| Persistent Vol. Claim (3Gi)| N/A | ✓ | ✗ |
-| Ingress | ✓ | ✗ | ✓ |
-| Nginx | ✓ | ✗ | ✗ |
-| DNS | ✓ | N/A | ✓ |
-| Cert-manager | N/A | N/A | v1.10.1 |
-| Certificat TLS | N/A | N/A | ✓ |
-
-ID Subscription :
-a1f74e2d-ec58-4f9a-a112-088e3469febb
-
-[&#8679;](#top)  
+[&#8679;](#top)   
 
 <div id='RG'/>  
 
@@ -223,15 +182,15 @@ Therefore, I had to create a kubeconfig file that recovers several connections i
 az aks get-credentials --resource-group $rgname --name $aksname -f kubeconfig.yaml
 ```
 
-then I had to download it and place it directly in my Git repository (downloading it from azure terminal does not push it into Git):
+Then I had to download it and place it directly in my Git repository (downloading it from azure terminal does not push it into Git):
 
 ```Bash
 download kubeconfig.yaml
 ```
 
-Once downloaded, I just have to put the code into the pipeline :
+Once downloaded, I just had to put the code into the Kubernetes service connection (choosing autoConfig params) to be able to use my pipeline and Kubernetes services.
 
-![kubeconfig_pipeline](https://user-images.githubusercontent.com/108001918/222142716-c7971b42-d8ea-4116-b7b2-134ea79157da.png)
+Then I created a Docker Hub registry in order to be able to build and push the Docker Image with my Pipeline. This way, the Docker image version would be updated when I excecuted the auto_maj.sh script and I could configure my pipeline to deploy Docker image the latest version into the qua and prod environments.
 
 [&#8679;](#top)
 
