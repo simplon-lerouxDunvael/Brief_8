@@ -101,49 +101,22 @@ So, I decided to do it via a script .sh.
 
 ### **Creation of a forked branch in GitHub**
 
-As required in the brief, I forked Alfred's [azure-vote](https://github.com/simplon-alfred/azure-voting-app-redis) repos and renamed it as [Forked_azVotingApp_b8duna](https://github.com/simplon-lerouxDunvael/Forked_azVotingApp_b8duna) to avoid confusion.
-
-![forked_branch](https://user-images.githubusercontent.com/108001918/221544580-67de67d0-c302-4a69-a55f-f1fedfb8d8a0.png)
-
-
-[&#8679;](#top)
-
-<div id='AKS'/>  
-
-### **Creation of the AKS Cluster (with SSH keys generated)**
-
-As Kubernetes is totally capable of handling it by itself and more reliably than human hand (with the right settings), I did not create a storage Account, PV creations and bindings.
-
-I created my AKS cluster :
-
-```bash
-az aks create -g b8duna -n AKSClusterDuna --enable-managed-identity --node-count 2 --enable-addons monitoring --enable-msi-auth-for-monitoring  --generate-ssh-keys
-```
-
-[&#8679;](#top)
-
-<div id='Connecting'/>  
-
-### **Connecting the AKS Cluster and Azure**
-
-Then I connected my AKS cluster to Azure.
-
-```bash
-az aks get-credentials --resource-group b8duna --name AKSClusterDuna
-```
+As required in the brief, I forked Alfred's [azure-vote](https://github.com/simplon-alfred/azure-voting-app-redis) repos.
+As it was not possible to change the repository's visibility to private, I created a new Github repository with all the files from Alfred's repository so it could be used with Azure DevOps Pipelines.
+I named it as [azVotingApp_b8duna](https://github.com/simplon-lerouxDunvael/azVotingApp_b8duna) to avoid confusion.
 
 [&#8679;](#top)
 
 <div id='RedSecret'/>  
 
-### **Issues**
+### **Voting-app and Ingress deployment in two namespaces**
 
 I deployed the azure voting app correctly but had issues once again with ingress and the TLS.
 As Quentin, Luna and I, all had the same problems, we realized several tests while streaming our screens.
 
 We tried and discussed our results and failures and finally came to terms.
 
-We found that we needed to :
+We found that we needed to do things in a specific order so everything would run smoothly :
 
 * create the two namespaces after connecting the AKS cluster to Azure
 * create a redis secret for each namespace
@@ -165,6 +138,14 @@ After deploying every resource in this order, we could all connect to the voting
 
 After all these steps, we decided (with Luna) to create a script that would deploy everything directly without having to redo the steps manually every time our resource groups get destroyed.
 
+Here is a little explanation for the two different versions of Ingress.
+
+* ingress_step1.yaml file  : the TLS parts and the TLS annotations are commented. I applied it with ```kubectl apply -f ingress_qua1.yaml```, ```kubectl apply -f ingress_prod1.yaml``` and checked it with ```kubectl get svc --all-namespaces``` to recover the external Ip address of the two Ingress.
+
+I created two "A" DNS records with the ingress IP addresses (one for each namespace). Then i checked the ingress and they displayed with : smoothie-qua.simplon-duna.space and smoothie-prod.simplon-duna.space.
+
+* ingress_step2.yaml file  : the TLS parts and the TLS annotations are decommented and the host has its dns name added. . I applied it with ```kubectl apply -f ingress_qua1.yaml```, ```kubectl apply -f ingress_prod1.yaml``` and checked it with ```kubectl get ingress```.
+
 [&#8679;](#top)
 
 <div id='DevOps'/>  
@@ -182,7 +163,7 @@ Therefore, I had to create a kubeconfig file that recovers several connections i
 az aks get-credentials --resource-group $rgname --name $aksname -f kubeconfig.yaml
 ```
 
-Then I had to download it and place it directly in my Git repository (downloading it from azure terminal does not push it into Git):
+Then I had to download it and place it directly in my Git repository (downloading it from azure terminal does not push it into Git) :
 
 ```Bash
 download kubeconfig.yaml
@@ -194,37 +175,23 @@ Then I created a Docker Hub registry in order to be able to build and push the D
 
 [&#8679;](#top)
 
-<div id='Ingress'/>  
+<div id='PipeCreation'/>  
 
-### **Deployment of Ingress**
+### **Pipeline creation**
 
-Once I deployed redis and the azure voting app and checked that my pods were running properly I decided to install Ingress to be able to access to the voting app from an url http I chose (and that i would later link to my dns record).
+The pipeline is constructed in a specific order :
 
-First I installed everything that was necessary for ingress with the following command :
+* First I declared the variables that would be used several times
+* Then I created a job to Build and Push the Docker Image into my Docker repository previously created
+* Once the docker image was created, I deployed it (in a canary way) to the qua namespace and checked that the voting app responded well with a curl (deployment.yaml)
+* Then as it worked, I deployed it (also in a canary way) to the prod namespace and checked that the voting app responded well with a curl too (deployment-canary.yaml)
+* Then I used a bash script to check the replicas created (2 for prod, 1 for qua). This way, I knew that in the namespace prod, there were one voting app with the old version and one with the new version. The cluster IP would manage the users between the pods.
+* Then I promoted the new version to all the pods in the prod namespace (deployment.yaml)
+* As the checks were successful, I deleted the canary deployment from the prod namespace (deployment-canary.yaml)
 
-```bash
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.4.0/deploy/static/provider/cloud/deploy.yaml
-```
+As the pipeline was working correctly, I ran the auto_maj.sh script to check if the pipeline would automatically run. It did run properly.
 
-Then I created three different versions of Ingress.
-
-* ingress_step1.yaml file  : the TLS parts, the host and the TLS annotations are commented. I applied it with ```kubectl apply -f ingress_step1.yaml``` and checked it with ```kubectl get ingress```.
-
-![first_ingress_working](https://user-images.githubusercontent.com/108001918/221797099-15cb98e4-40ef-4fa2-b95b-b41ffc3f1d12.png)
-
-After this step, ingress had an IP address. Then I created a "A" DNS record with the ingress IP address. I checked ingress and it now displayed with : smoothie.simplon-duna.space.
-
-* ingress_step2.yaml file  : i added the dns to the host part. I applied it with ```kubectl apply -f ingress_step1.yaml``` and checked it with ```kubectl get ingress```.
-* ingress_step3.yaml file  : the TLS parts and the TLS annotations are decommented and the host has its dns name added. I applied it with ```kubectl apply -f ingress_step1.yaml``` and checked it with ```kubectl get ingress```.
-
-Finally I connected to the Voting app using smoothie.simplon-duna.space and it worked.
-
-[&#8679;](#top)
-
-
-
-
-
+Finally I created the update procedure document.
 
 [&#8679;](#top)
 
