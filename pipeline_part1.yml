@@ -1,0 +1,66 @@
+trigger:
+  - main
+
+resources:
+- repo: self
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  imageName: 'votingApp'
+  imageRepository: 'dunvael/custom-voting-app'
+  dockerfilePath: './Dockerfile'
+  kubernetesServiceEndpoint: 'KubernetesDunaConnection'
+  canaryTag: 'canary'
+
+# Build the docker image
+stages:
+- stage: Build
+  jobs:
+  - job: BuildAndPush
+    displayName: 'Build and Push the Docker image to DockerHub'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'DockerHubConnection'
+        repository: $(imageRepository)
+        command: 'buildAndPush'
+        Dockerfile: $(dockerfilePath)
+        tags: 'latest'
+
+# Deploy to QUA
+- stage: DeployQUA
+  dependsOn: Build
+  jobs:
+  - job: DeployToQUA
+    displayName: 'Deploy to QUA'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Kubernetes@1
+      displayName: Deploy to QUA
+      inputs:
+        connectionType: 'Kubernetes Service Connection'
+        kubernetesServiceEndpoint: '$(kubernetesServiceEndpoint)'
+        namespace: 'qua'
+        command: 'apply'
+        arguments: '-f ./k8s/deployment.yaml'
+        secretType: 'dockerRegistry'
+        containerRegistryType: 'Container Registry'
+        dockerRegistryEndpoint: 'DockerHubConnection'
+
+# Test QA service
+- stage: TestQUA
+  dependsOn: DeployQUA
+  jobs:
+  - job: TestQUAService
+    displayName: 'Test QUA Service'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - script: |
+        curl https://smoothie-qua.simplon-duna.space/
+      displayName: Test QUA Service with curl
