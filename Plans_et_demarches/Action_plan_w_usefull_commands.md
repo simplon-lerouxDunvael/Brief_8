@@ -8,61 +8,17 @@
 
 ###### [01 - Kubernetes, AKS and Azure Pipelines doc reading](#Doc)
 
-###### [02 - Architecture Topology](#Topology)
+###### [02 - Creation of a resource group](#RG)
 
-###### [03 - Resource List](#Resources)
+###### [03 - Creation of a forked branch in GitHub](#branch)
 
-###### [04 - Creation of a resource group](#RG)
+###### [04 - Voting-app and Ingress deployment in two namespaces](#deployments)
 
-###### [05 - Creation of a storage account (standard GRS)](#Storacc)
+###### [05 - Connecting to Azure DevOps Pipelines](#DevOps)
 
-###### [06 - Creation of the AKS Cluster (with SSH keys generated)](#AKS)
+###### [06 - Pipeline creation](#PipeCreation)
 
-###### [07 - Connecting the AKS Cluster and Azure](#Connecting)
-
-###### [08 - Creation of the redis secret](#RedSecret)
-
-###### [09 - Connecting to Azure DevOps Pipelines](#DevOps)
-
-###### [10 - Creation of a test pipeline](#Pipeline)
-
-###### [11 - Checks and tests](#Checks)
-
-###### [12 - Error messages](#Error)
-
-###### [13 - Trying to find a solution](#Solution)
-
-###### [14 - Updating the voting app on the script](#Updating)
-
-###### [15 - Remove the PV](#PV)
-
-###### [16 - Delete everything and start again](#Again)
-
-###### [17 - Add Ingress](#Ingress)
-
-###### [18 - Install Cert-manager and Jetstack (for gandi)](#Cert-manager)
-
-###### [19 - Creation of a Gandi secret](#Gsecret)
-
-###### [20 - Install cert-manager webhook for gandi](#Webhook)
-
-###### [21 - Creation of secret role and binding for webhook](#Binding)
-
-###### [22 - Check the certificate](#Certificate)
-
-###### [23 - Scheduling](#Scheduling)
-
-###### [24 - Pipeline debugging](#Debugging)
-
-###### [25 - How to get a certificate Summary](#Summary)
-
-###### [26 - Executive summary](#ExecSummary)
-
-###### [27 - Technical Architecture Document of deployed infrastructure](#DAT)
-
-###### [28 - Check consumption](#Consumption)
-
-###### [29 - Usefull Commands](#UsefullCommands)
+###### [07 - Usefull Commands](#UsefullCommands)
 
 <div id='Scrum'/>  
 
@@ -97,7 +53,7 @@ So, I decided to do it via a script .sh.
 
 [&#8679;](#top)
 
-<div id='Storacc'/>  
+<div id='branch'/>  
 
 ### **Creation of a forked branch in GitHub**
 
@@ -107,7 +63,7 @@ I named it as [azVotingApp_b8duna](https://github.com/simplon-lerouxDunvael/azVo
 
 [&#8679;](#top)
 
-<div id='RedSecret'/>  
+<div id='deployments'/>  
 
 ### **Voting-app and Ingress deployment in two namespaces**
 
@@ -305,50 +261,6 @@ az group delete --name [resourceGroupName] --yes --no-wait
 
 [&#8679;](#top)
 
-### **To create a repository Helm and install Jetstack**
-
-*To create the repository and install Jetstack :*
-
-```bash
-helm repo add jetstack https://charts.jetstack.io
-```
-
-*To check the repository created and Jetstack version :*
-
-```bash
-helm search repo jetstack
-```
-
-[&#8679;](#top)
-
-### **To create a role for Gandi's secret and bind it to the webhook**
-
-*To create the role :*
-
-```bash
-kubectl create role [role-name] --verb=[Authorised-actions] --resource=[Authorised-resource]
-```
-
-*Example :*  
-
-```bash
-kubectl create role access-secrets --verb=get,list,watch,update,create --resource=secrets
-```
-
-*To bind it :*  
-
-```bash
-kubectl create rolebinding --role=[role-name] [role-name] --serviceaccount=[group]:[group-item]
-```
-
-*Example :*  
-
-```bash
-kubectl create rolebinding --role=access-secrets default-to-secrets --serviceaccount=cert-manager:cert-manager-webhook-gandi-1665665029
-```
-
-[&#8679;](#top)
-
 ### **To check TLS certificate in request order**
 
 ```bash
@@ -371,54 +283,10 @@ kubectl describe challenge
 
 [&#8679;](#top)
 
-### **Get the IP address to point the DNS to nginx**
+### **Get the IP address to point the DNS to nginx in the two namespaces**
 
 ```bash
-kubectl get ingress
-```
-
-[&#8679;](#top)
-
-### **Activate the autoscaler on an existing cluster**
-
-```bash
-az aks update --resource-group b6duna --name AKSClusterd2 --enable-cluster-autoscaler --min-count 1 --max-count 8
-```
-
-[&#8679;](#top)
-
-### **To check the auto scaling creation**
-
-```bash
-get HorizontalPodAutoscaler
-```
-
-*Example of how the results will display :*  
-
-```bash
-horizontalpodautoscaler.autoscaling/scaling-voteapp created
-```
-
-[&#8679;](#top)
-
-### **To check Webhook configuration**
-
-```bash
-kubectl get ValidatingWebhookConfiguration -A
-```
-
-[&#8679;](#top)
-
-### **Delete Webhook configuration for a role**
-
-```bash
-kubectl delete -A ValidatingWebhookConfiguration [rolename]  
-```
-
-*Example :*  
-
-```bash
-kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
+kubectl get svc --all-namespaces
 ```
 
 [&#8679;](#top)
