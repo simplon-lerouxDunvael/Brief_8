@@ -2,8 +2,10 @@
 
 In order to update the Voting App version via the Azure DevOps Pipeline, please follow these steps :
 
-* Open a bash terminal
-* Excecute the auto_maj.sh file in the [azVotingApp_b8duna](https://github.com/simplon-lerouxDunvael/azVotingApp_b8duna) Github repository  by typing :  
+1) Open a bash terminal
+2) Clone the github repository [azVotingApp_b8duna](https://github.com/simplon-lerouxDunvael/azVotingApp_b8duna)
+3) In the bash terminal, go into the folder Infra_K8s (with `cd` or `pushd`)
+4) Excecute the auto_maj.sh file (in the folder Infra_K8s) by typing :  
 
 ```Bash
 bash auto_maj.sh
@@ -15,4 +17,4 @@ bash auto_maj.sh
 ./auto_maj.sh
 ```
 
-* Once deployed the Pipeline will run and deploy to the qua and prod environments
+5) Once auto_maj.sh is deployed, the Pipeline will automatically run and deploy to the qua and prod environments
