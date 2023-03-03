@@ -17,7 +17,7 @@ import threading
 # x = le temps
 # y = nombres de réponses
 
-url = "https://smoothie.simplon-duna.space/"
+url = "https://smoothie-prod.simplon-duna.space/"
 
 # Création des formulaires
 form_cats = MultipartEncoder(fields={'vote': 'Cats'})
