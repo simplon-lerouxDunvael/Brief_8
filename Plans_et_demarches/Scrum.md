@@ -30,17 +30,21 @@ Objectifs :
 Jeudi 02/03/23  
 Résultats de la veille :
 
-* 
+* Problème de certificats let's encrypt réglé
+* Accès à la voting app via https pour les deux namespaces
+* Image Docker créé et compte Docker Hub créé
 
 Objectifs :
 
-* 
+* Continuer la pipeline
+* Commencer l'update procedure
 
 Vendredi 03/03/23  
 Résultats de la veille :
 
-* 
+* Update procedure réalisée
+* Pipeline fonctionnelle
 
 Objectifs :
 
-* 
+* Faire la présentation
