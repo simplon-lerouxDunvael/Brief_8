@@ -24,7 +24,7 @@ Résultats de la veille :
 
 Objectifs :
 
-* Régler le problème de certificats let's encrypt à régler
+* Régler le problème de certificats let's encrypt
 * Continuer le brief avec le kubectl
 
 Jeudi 02/03/23  
